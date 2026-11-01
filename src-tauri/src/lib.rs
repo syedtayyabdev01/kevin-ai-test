@@ -108,10 +108,11 @@ async fn test_and_save_provider(provider_id: String, api_key: String, base_url: 
         });
     }
     let entry = credential_entry(&provider_id)?;
+    let stored_value = if api_key.trim().is_empty() { "__LOCAL_OLLAMA_NO_KEY__" } else { api_key.trim() };
+    entry.set_password(stored_value).map_err(|_| "Connection passed, but the operating-system credential vault could not save the key.".to_string())?;
     if api_key.trim().is_empty() {
-        return Ok(format!("{} connection verified. No API key was required.", provider_name(&provider_id).unwrap()));
+        return Ok(format!("{} connection verified. Local connection marker saved in the operating-system credential vault.", provider_name(&provider_id).unwrap()));
     }
-    entry.set_password(api_key.trim()).map_err(|_| "Connection passed, but the operating-system credential vault could not save the key.".to_string())?;
     Ok(format!("{} connected. API key saved in the operating-system credential vault.", provider_name(&provider_id).unwrap()))
 }
 
